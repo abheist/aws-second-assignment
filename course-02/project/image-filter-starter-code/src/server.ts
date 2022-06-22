@@ -17,6 +17,7 @@ const valid_url = require('valid-url');
     app.use(bodyParser.json());
 
     // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
+    // !IMP: http://image-filter-starter-code-dev2222222222222222222222222.us-east-1.elasticbeanstalk.com/filteredimage?image_url=https://upload.wikimedia.org/wikipedia/commons/b/bd/Golden_tabby_and_white_kitten_n01.jpg
     // GET /filteredimage?image_url={{URL}}
     // endpoint to filter an image from a public url.
     // IT SHOULD
