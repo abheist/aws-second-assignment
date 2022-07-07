@@ -46,11 +46,11 @@ export async function updateTodo(userId: string, todoId: string, updateTodoReque
     const item = await todosAccess.getTodoItem(todoId)
 
     if (!item)
-        throw new Error('Item not found')  // FIXME: 404?
+        throw new Error('Item not found')
 
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to update todo ${todoId}`)
-        throw new Error('User is not authorized to update item')  // FIXME: 403?
+        throw new Error('User is not authorized to update item')
     }
 
     todosAccess.updateTodoItem(todoId, updateTodoRequest as TodoUpdate)
@@ -62,11 +62,11 @@ export async function deleteTodo(userId: string, todoId: string) {
     const item = await todosAccess.getTodoItem(todoId)
 
     if (!item)
-        throw new Error('Item not found')  // FIXME: 404?
+        throw new Error('Item not found')
 
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to delete todo ${todoId}`)
-        throw new Error('User is not authorized to delete item')  // FIXME: 403?
+        throw new Error('User is not authorized to delete item')
     }
 
     todosAccess.deleteTodoItem(todoId)
@@ -80,13 +80,13 @@ export async function updateAttachmentUrl(userId: string, todoId: string, attach
     logger.info(`Updating todo ${todoId} with attachment URL ${attachmentUrl}`, {userId, todoId})
 
     const item = await todosAccess.getTodoItem(todoId)
-    ''
+
     if (!item)
-        throw new Error('Item not found')  // FIXME: 404?
+        throw new Error('Item not found')
 
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to update todo ${todoId}`)
-        throw new Error('User is not authorized to update item')  // FIXME: 403?
+        throw new Error('User is not authorized to update item')
     }
 
     await todosAccess.updateAttachmentUrl(todoId, attachmentUrl)
