@@ -5,38 +5,24 @@ service: serverless-todo-app
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
-  - serverless-plugin-tracing
 
 provider:
   name: aws
   runtime: nodejs12.x
-  lambdaHashingVersion: '20201221'
 
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'us-east-1'}
 
-  tracing:
-    lambda: true
-    apiGateway: true
-
-
   environment:
     TODOS_TABLE: Todos-${self:provider.stage}
     TODOS_BY_USER_INDEX: TodosByUserIndex
-    TODOS_CREATED_AT_INDEX: CreatedAtIndex
-    ATTACHMENT_S3_BUCKET: serverless-c4-todo-images-${self:provider.stage}
+    ATTACHMENTS_S3_BUCKET: todos-attachments-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
     AUTH_0_JWKS_URL: https://dev-cr9isr4f.eu.auth0.com/.well-known/jwks.json
 
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - xray:PutTelemetryRecords
-            - xray:PutTraceSegments
-          Resource: "*"
-
+  tracing:
+    lambda: true
+    apiGateway: true
 
 functions:
 
@@ -51,25 +37,25 @@ functions:
           path: todos
           cors: true
           auth: Auth
-      iamRoleStatements:
-        - Effect: Allow
-          Action:
-            - dynamoDB:Query
-          Resource: arn:aws:dynamoDB:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS}/index/${self:provider.environment.TODOS_BY_USER_INDEX}
-        - Effect: Allow
-          Action:
-            - xray:GetSamplingRules
-            - xray:GetSamplingTargets
-            - xray:GetSamplingStatisticSummaries
-            - xray:BatchGetTraces
-            - xray:GetServiceGraph
-            - xray:GetTraceGraph
-            - xray:GetTraceSummaries
-            - xray:GetGroups
-            - xray:GetGroup
-            - xray:PutTraceSegments
-          Resource:
-            - "*"
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_BY_USER_INDEX}
+      - Effect: Allow
+        Action:
+          - xray:GetSamplingRules
+          - xray:GetSamplingTargets
+          - xray:GetSamplingStatisticSummaries
+          - xray:BatchGetTraces
+          - xray:GetServiceGraph
+          - xray:GetTraceGraph
+          - xray:GetTraceSummaries
+          - xray:GetGroups
+          - xray:GetGroup
+          - xray:PutTraceSegments
+        Resource:
+          - "*"
 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
@@ -79,9 +65,6 @@ functions:
           path: todos
           cors: true
           auth: Auth
-          request:
-            schemas:
-              application/json: ${file(models/create-todo-model.json)}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -139,7 +122,7 @@ functions:
           path: todos/{todoId}
           cors: true
           auth: Auth
-    iamRoleStatement:
+    iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:DeleteItem
@@ -172,12 +155,12 @@ functions:
       - Effect: Allow
         Action:
           - s3:PutObject
-        Resource: arn:aws:s3:::${self.provider.environment.ATTACHMENT_S3_BUCKET}/*
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*
       - Effect: Allow
         Action:
           - dynamodb:UpdateItem
           - dynamodb:GetItem
-        Resource: awn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
       - Effect: Allow
         Action:
           - xray:GetSamplingRules
@@ -195,6 +178,7 @@ functions:
 
 resources:
   Resources:
+    # API Gateway
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
@@ -205,14 +189,15 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi
-    
+
+    # DynamoDB
     TodosTable:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
           - AttributeName: todoId
             AttributeType: S
-          - AttributeName: userUd
+          - AttributeName: userId
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
@@ -227,10 +212,11 @@ resources:
               - AttributeName: userId
                 KeyType: HASH
               - AttributeName: createdAt
-                KeyType: HASH
+                KeyType: RANGE
             Projection:
               ProjectionType: ALL
 
+    # S3 Bucket
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
@@ -252,13 +238,13 @@ resources:
     AttachmentsBucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
-        Bucket: !Ref AttachmentsBucket
         PolicyDocument:
           Id: MyPolicy
           Version: "2012-10-17"
-          Statements:
+          Statement:
             - Sid: PublicReadForGetBucketObjects
               Effect: Allow
               Principal: '*'
-              Action: 's3.GetObject'
+              Action: 's3:GetObject'
               Resource: 'arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/*'
+        Bucket: !Ref AttachmentsBucket
