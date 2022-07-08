@@ -79,7 +79,6 @@ export const Todos = (props: TodosProps) => {
   const renderTodosList = () => {
     return (
       <Grid padded>
-        <code style={{width:'100px'}}><pre>{JSON.stringify(todosState.todos,undefined,2)}</pre></code>
         {todosState.todos.length > 0 && todosState.todos.map((todo, pos) => {
           if (!todo) {
             return null;
