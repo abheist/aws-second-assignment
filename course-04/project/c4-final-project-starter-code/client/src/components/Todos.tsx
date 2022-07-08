@@ -93,10 +93,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     try {
       const todos = await getTodos(this.props.auth.getIdToken())
       this.setState({
-        todos,
+        todos: todos || [],
         loadingTodos: false
       })
-    } catch (e) {
+    } catch (e: any) {
       alert(`Failed to fetch todos: ${e.message}`)
     }
   }
