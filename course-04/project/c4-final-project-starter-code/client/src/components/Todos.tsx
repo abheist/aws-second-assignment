@@ -21,16 +21,11 @@ interface TodosState {
 }
 
 export const Todos = (props: TodosProps) => {
-  let [todos, setTodos] = useState<TodosState>({
+  let [todosState, setTodosState] = useState<TodosState>({
     todos: [],
     newTodoName: '',
     loadingTodos: true
   })
-
-  // const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const newState = {newTodoName: event.target.value}
-  //   setTodos({...newState})
-  // }
 
   const onEditButtonClick = (todoId: string) => {
     props.history.push(`/todos/${todoId}/edit`)
@@ -52,7 +47,8 @@ export const Todos = (props: TodosProps) => {
             fluid
             actionPosition='left'
             placeholder='To change the world...'
-            onChange={(event) => setTodos({ ...todos, newTodoName: event.target.value })}
+            value={todosState.newTodoName}
+            onChange={(event) => setTodosState({ ...todosState, newTodoName: event.target.value })}
           />
         </Grid.Column>
         <Grid.Column width={16}>
@@ -63,7 +59,7 @@ export const Todos = (props: TodosProps) => {
   }
 
   const renderTodos = () => {
-    if (todos.loadingTodos) {
+    if (todosState.loadingTodos) {
       return renderLoading()
     }
 
@@ -83,7 +79,11 @@ export const Todos = (props: TodosProps) => {
   const renderTodosList = () => {
     return (
       <Grid padded>
-        {todos.todos.map((todo, pos) => {
+        <code style={{width:'100px'}}><pre>{JSON.stringify(todosState.todos,undefined,2)}</pre></code>
+        {todosState.todos.length > 0 && todosState.todos.map((todo, pos) => {
+          if (!todo) {
+            return null;
+          }
           return (
             <Grid.Row key={todo.todoId}>
               <Grid.Column width={1} verticalAlign='middle'>
@@ -139,13 +139,17 @@ export const Todos = (props: TodosProps) => {
   const onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
     try {
       const dueDate = calculateDueDate()
+      if (!todosState.newTodoName) {
+        alert('Todo can\'t be empty')
+        return;
+      }
       const newTodo = await createTodo(props.auth.getIdToken(), {
-        name: todos.newTodoName,
+        name: todosState.newTodoName,
         dueDate
       })
-      setTodos({
-        ...todos,
-        todos: [...todos.todos, newTodo],
+      setTodosState({
+        ...todosState,
+        todos: [...todosState.todos, newTodo],
         newTodoName: ''
       })
     } catch {
@@ -156,9 +160,9 @@ export const Todos = (props: TodosProps) => {
   const onTodoDelete = async (todoId: string) => {
     try {
       await deleteTodo(props.auth.getIdToken(), todoId)
-      setTodos({
-        ...todos,
-        todos: todos.todos.filter(todo => todo.todoId !== todoId)
+      setTodosState({
+        ...todosState,
+        todos: todosState.todos.filter(todo => todo.todoId !== todoId)
       })
     } catch {
       alert('Todo deletion failed')
@@ -167,15 +171,15 @@ export const Todos = (props: TodosProps) => {
 
   const onTodoCheck = async (pos: number) => {
     try {
-      const todo = todos.todos[pos]
+      const todo = todosState.todos[pos]
       await patchTodo(props.auth.getIdToken(), todo.todoId, {
         name: todo.name,
         dueDate: todo.dueDate,
         done: !todo.done
       })
-      setTodos({
-        ...todos,
-        todos: update(todos.todos, {
+      setTodosState({
+        ...todosState,
+        todos: update(todosState.todos, {
           [pos]: { done: { $set: !todo.done } }
         })
       })
@@ -188,8 +192,8 @@ export const Todos = (props: TodosProps) => {
     try {
       getTodos(props.auth.getIdToken()).then((data) => {
         console.log({ data })
-        setTodos({
-          ...todos,
+        setTodosState({
+          ...todosState,
           todos: data || [],
           loadingTodos: false
         })

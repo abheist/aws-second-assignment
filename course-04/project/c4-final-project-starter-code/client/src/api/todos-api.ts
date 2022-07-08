@@ -22,7 +22,7 @@ export async function createTodo(idToken: string, newTodo: CreateTodoRequest): P
       'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}`
     }
   })
-  return response.data.todos
+  return response.data.item
 }
 
 export async function patchTodo(idToken: string, todoId: string, updatedTodo: UpdateTodoRequest): Promise<void> {
