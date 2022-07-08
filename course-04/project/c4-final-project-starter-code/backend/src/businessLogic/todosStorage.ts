@@ -15,16 +15,14 @@ export class TodosStorage {
     }
 
     async getAttachmentUrl(attachmentId: string): Promise<string> {
-        const attachmentUrl = `https://${this.bucketName}.s3.amazonaws.com/${attachmentId}`
-        return attachmentUrl
+        return `https://${this.bucketName}.s3.amazonaws.com/${attachmentId}`
     }
 
     async getUploadUrl(attachmentId: string): Promise<string> {
-        const uploadUrl = this.s3.getSignedUrl('putObject', {
+        return this.s3.getSignedUrl('putObject', {
             Bucket: this.bucketName,
             Key: attachmentId,
             Expires: this.urlExpiration
         })
-        return uploadUrl
     }
 }
