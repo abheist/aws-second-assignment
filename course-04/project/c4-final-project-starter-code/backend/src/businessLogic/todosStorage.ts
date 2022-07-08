@@ -1,11 +1,12 @@
 import 'source-map-support/register'
 
 import * as AWS from 'aws-sdk'
-import * as AWSXRAY from 'aws-xray-sdk'
+import * as AWSXRay from 'aws-xray-sdk'
 
-const XAWS = AWSXRAY.captureAWS(AWS)
+const XAWS = AWSXRay.captureAWS(AWS)
 
 export class TodosStorage {
+
     constructor(
         private readonly s3 = new XAWS.S3({signatureVersion: 'v4'}),
         private readonly bucketName = process.env.ATTACHMENTS_S3_BUCKET,
@@ -14,14 +15,16 @@ export class TodosStorage {
     }
 
     async getAttachmentUrl(attachmentId: string): Promise<string> {
-        return `https://${this.bucketName}.s3.amazonaws.com/${attachmentId}`
+        const attachmentUrl = `https://${this.bucketName}.s3.amazonaws.com/${attachmentId}`
+        return attachmentUrl
     }
 
     async getUploadUrl(attachmentId: string): Promise<string> {
-        return this.s3.getSignedUrl('putObject', {
+        const uploadUrl = this.s3.getSignedUrl('putObject', {
             Bucket: this.bucketName,
             Key: attachmentId,
             Expires: this.urlExpiration
         })
+        return uploadUrl
     }
 }

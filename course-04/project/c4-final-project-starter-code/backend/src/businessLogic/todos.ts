@@ -25,12 +25,7 @@ export async function createTodo(userId: string, createTodoRequest: CreateTodoRe
     const todoId = uuid.v4()
 
     const newItem: TodoItem = {
-        userId,
-        todoId,
-        createdAt: new Date().toISOString(),
-        done: false,
-        attachmentUrl: null,
-        ...createTodoRequest
+        userId, todoId, createdAt: new Date().toISOString(), done: false, attachmentUrl: null, ...createTodoRequest
     }
 
     logger.info(`Creating todo ${todoId} for user ${userId}`, {userId, todoId, todoItem: newItem})
@@ -45,8 +40,7 @@ export async function updateTodo(userId: string, todoId: string, updateTodoReque
 
     const item = await todosAccess.getTodoItem(todoId)
 
-    if (!item)
-        throw new Error('Item not found')
+    if (!item) throw new Error('Item not found')
 
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to update todo ${todoId}`)
@@ -61,8 +55,7 @@ export async function deleteTodo(userId: string, todoId: string) {
 
     const item = await todosAccess.getTodoItem(todoId)
 
-    if (!item)
-        throw new Error('Item not found')
+    if (!item) throw new Error('Item not found')
 
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to delete todo ${todoId}`)
@@ -81,8 +74,7 @@ export async function updateAttachmentUrl(userId: string, todoId: string, attach
 
     const item = await todosAccess.getTodoItem(todoId)
 
-    if (!item)
-        throw new Error('Item not found')
+    if (!item) throw new Error('Item not found')
 
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to update todo ${todoId}`)
