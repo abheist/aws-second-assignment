@@ -4,7 +4,7 @@ import { Dimmer, Loader } from 'semantic-ui-react'
 function Callback() {
   return (
     <Dimmer active>
-      <Loader content="Loading" />
+      <Loader content='Loading' />
     </Dimmer>
   )
 }
