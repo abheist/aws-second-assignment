@@ -47,7 +47,7 @@ export async function updateTodo(userId: string, todoId: string, updateTodoReque
         throw new Error('User is not authorized to update item')
     }
 
-    todosAccess.updateTodoItem(todoId, updateTodoRequest as TodoUpdate)
+    todosAccess.updateTodoItem(todoId, updateTodoRequest as TodoUpdate).then(() => logger.info(`Todo Item ${todoId} updated`))
 }
 
 export async function deleteTodo(userId: string, todoId: string) {
@@ -62,12 +62,11 @@ export async function deleteTodo(userId: string, todoId: string) {
         throw new Error('User is not authorized to delete item')
     }
 
-    todosAccess.deleteTodoItem(todoId)
+    todosAccess.deleteTodoItem(todoId).then(() => logger.info(`Todo item ${todoId} deleted`))
 }
 
 export async function updateAttachmentUrl(userId: string, todoId: string, attachmentId: string) {
     logger.info(`Generating attachment URL for attachment ${attachmentId}`)
-
     const attachmentUrl = await todosStorage.getAttachmentUrl(attachmentId)
 
     logger.info(`Updating todo ${todoId} with attachment URL ${attachmentUrl}`, {userId, todoId})
@@ -75,7 +74,6 @@ export async function updateAttachmentUrl(userId: string, todoId: string, attach
     const item = await todosAccess.getTodoItem(todoId)
 
     if (!item) throw new Error('Item not found')
-
     if (item.userId !== userId) {
         logger.error(`User ${userId} does not have permission to update todo ${todoId}`)
         throw new Error('User is not authorized to update item')
@@ -85,9 +83,7 @@ export async function updateAttachmentUrl(userId: string, todoId: string, attach
 }
 
 export async function generateUploadUrl(attachmentId: string): Promise<string> {
-    logger.info(`Generating upload URL for attachment ${attachmentId}`)
+    logger.info(`Upload URL for attachment ${attachmentId}`)
 
-    const uploadUrl = await todosStorage.getUploadUrl(attachmentId)
-
-    return uploadUrl
+    return await todosStorage.getUploadUrl(attachmentId)
 }
